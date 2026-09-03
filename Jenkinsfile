@@ -2,21 +2,21 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Build Docker Image') {
             steps {
-                checkout scm
+                sh '''
+                    echo "Building Trend Docker image..."
+                    docker build -t trend-app:${BUILD_NUMBER} .
+                    docker tag trend-app:${BUILD_NUMBER} trend-app:latest
+                '''
             }
         }
 
-        stage('Verify Source') {
+        stage('Verify Docker Image') {
             steps {
                 sh '''
-                    echo "Repository checkout successful"
-                    echo "Current directory:"
-                    pwd
-
-                    echo "Files:"
-                    ls -la
+                    echo "Docker images:"
+                    docker images trend-app
                 '''
             }
         }
