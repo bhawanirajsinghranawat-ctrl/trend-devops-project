@@ -6,6 +6,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Building Trend Docker image..."
+
                     docker build -t trend-app:${BUILD_NUMBER} .
                     docker tag trend-app:${BUILD_NUMBER} trend-app:latest
                 '''
@@ -31,14 +32,34 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        echo "$DOCKER_PASSWORD" | docker login \
+                            -u "$DOCKER_USERNAME" \
+                            --password-stdin
 
-                        docker tag trend-app:latest $DOCKER_USERNAME/trend-app:latest
-                        docker push $DOCKER_USERNAME/trend-app:latest
+                        docker tag trend-app:latest \
+                            $DOCKER_USERNAME/trend-app:latest
+
+                        docker push \
+                            $DOCKER_USERNAME/trend-app:latest
 
                         docker logout
                     '''
                 }
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                sh '''
+                    echo "Deploying Trend application to EKS..."
+
+                    kubectl set image deployment/trend-deployment \
+                        trend=bhawani608/trend-app:latest
+
+                    echo "Waiting for deployment rollout..."
+
+                    kubectl rollout status deployment/trend-deployment
+                '''
             }
         }
     }
