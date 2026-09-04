@@ -1,7 +1,18 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/bhawanirajsinghranawat-ctrl/trend-devops-project.git'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh '''
